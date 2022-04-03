@@ -1,0 +1,32 @@
+version: '3'
+services:
+  database:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: docker_root_password
+      MYSQL_USER: docker_user
+      MYSQL_PASSWORD: docker_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./migration/docker-database-initial.sql:/docker-entrypoint-initdb.d/docker-database-initial.sql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - database
+    environment:
+      PMA_HOST: database
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - "8081:80"
+  app:
+    build: .
+    env_file: .env
+    volumes:
+      - .:/opt/app/api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
